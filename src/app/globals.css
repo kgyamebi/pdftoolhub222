@@ -1,0 +1,138 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-heading: var(--font-heading);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --paper: #f6f3ec;
+  --background: #f6f3ec;
+  --foreground: #1c2430;
+  --card: #fffdf8;
+  --card-foreground: #1c2430;
+  --popover: #fffdf8;
+  --popover-foreground: #1c2430;
+  --primary: #b4532a;
+  --primary-foreground: #fffaf4;
+  --secondary: #e8dfd0;
+  --secondary-foreground: #1c2430;
+  --muted: #efe8dc;
+  --muted-foreground: #5c6570;
+  --accent: #e8dfd0;
+  --accent-foreground: #1c2430;
+  --destructive: #9f2d2d;
+  --border: #e2d8c8;
+  --input: #e2d8c8;
+  --ring: #b4532a;
+  --chart-1: #b4532a;
+  --chart-2: #2f6f4e;
+  --chart-3: #3b5b8a;
+  --chart-4: #c9a227;
+  --chart-5: #6b4f3a;
+  --radius: 0.75rem;
+  --sidebar: #fffdf8;
+  --sidebar-foreground: #1c2430;
+  --sidebar-primary: #b4532a;
+  --sidebar-primary-foreground: #fffaf4;
+  --sidebar-accent: #efe8dc;
+  --sidebar-accent-foreground: #1c2430;
+  --sidebar-border: #e2d8c8;
+  --sidebar-ring: #b4532a;
+}
+
+.dark {
+  --paper: #141820;
+  --background: #141820;
+  --foreground: #f4efe6;
+  --card: #1c222c;
+  --card-foreground: #f4efe6;
+  --popover: #1c222c;
+  --popover-foreground: #f4efe6;
+  --primary: #e08a5c;
+  --primary-foreground: #1c1410;
+  --secondary: #2a3140;
+  --secondary-foreground: #f4efe6;
+  --muted: #2a3140;
+  --muted-foreground: #b7b1a6;
+  --accent: #2a3140;
+  --accent-foreground: #f4efe6;
+  --destructive: #f87171;
+  --border: #2f3644;
+  --input: #2f3644;
+  --ring: #e08a5c;
+  --sidebar: #1c222c;
+  --sidebar-foreground: #f4efe6;
+  --sidebar-primary: #e08a5c;
+  --sidebar-primary-foreground: #1c1410;
+  --sidebar-accent: #2a3140;
+  --sidebar-accent-foreground: #f4efe6;
+  --sidebar-border: #2f3644;
+  --sidebar-ring: #e08a5c;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+  h1, h2, h3, .font-heading {
+    font-family: var(--font-heading), ui-serif, Georgia, serif;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
