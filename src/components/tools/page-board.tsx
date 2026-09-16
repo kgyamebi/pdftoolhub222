@@ -188,7 +188,7 @@ export function ClickPlacePreview({
         }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={url} alt="Page preview" className="w-full" />
+        <img src={url} alt="Page preview" className="max-h-72 w-full object-contain bg-muted" />
         {marker ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img

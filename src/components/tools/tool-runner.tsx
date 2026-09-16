@@ -223,6 +223,12 @@ export function ToolRunner({ tool, initialFiles }: { tool: ToolDefinition; initi
           onChange={(pages) => setSettings((s) => ({ ...s, order: pages.join(",") }))}
         />
       )}
+      {SIGNATURE_TOOLS.has(tool.slug) && (
+        <SignaturePad value={settings.signature || ""} onChange={(signature) => setSettings((s) => ({ ...s, signature }))} />
+      )}
+      {pdfFile && INK_TOOLS.has(tool.slug) && (
+        <InkBoard file={pdfFile} value={settings.strokes || ""} onChange={(strokes) => setSettings((s) => ({ ...s, strokes }))} />
+      )}
       {pdfFile && CLICK_PLACE_TOOLS.has(tool.slug) && (
         <ClickPlacePreview
           file={pdfFile}
@@ -239,12 +245,6 @@ export function ToolRunner({ tool, initialFiles }: { tool: ToolDefinition; initi
           page={selectedPages[0] ?? 1}
           onPlace={(x, y) => setSettings((s) => ({ ...s, x: String(Math.round(x)), y: String(Math.round(y)) }))}
         />
-      )}
-      {pdfFile && INK_TOOLS.has(tool.slug) && (
-        <InkBoard file={pdfFile} value={settings.strokes || ""} onChange={(strokes) => setSettings((s) => ({ ...s, strokes }))} />
-      )}
-      {SIGNATURE_TOOLS.has(tool.slug) && (
-        <SignaturePad value={settings.signature || ""} onChange={(signature) => setSettings((s) => ({ ...s, signature }))} />
       )}
       {tool.slug === "fill-pdf" && formFields.length > 0 && (
         <div className="mt-5 space-y-3">

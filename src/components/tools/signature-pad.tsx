@@ -42,6 +42,7 @@ export function SignaturePad({ value, onChange }: { value: string; onChange: (da
         width={560}
         height={180}
         className="h-36 w-full touch-none rounded-xl border bg-background"
+        data-signature-pad
         onPointerDown={(e) => {
           drawing.current = true;
           const ctx = canvasRef.current?.getContext("2d");
