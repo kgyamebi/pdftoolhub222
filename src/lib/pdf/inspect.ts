@@ -27,10 +27,24 @@ export async function renderThumbnails(
   return { pageCount, thumbs };
 }
 
-export async function listFormFields(bytes: Uint8Array): Promise<{ name: string; kind: string }[]> {
+export type FormFieldInfo = {
+  name: string;
+  kind: "text" | "checkbox" | "dropdown" | "radio" | "other";
+};
+
+export async function listFormFields(bytes: Uint8Array): Promise<FormFieldInfo[]> {
   const doc = await loadPdf(bytes);
-  return doc.getForm().getFields().map((field) => ({
-    name: field.getName(),
-    kind: field.constructor.name.replace(/^PDF/, ""),
-  }));
+  return doc.getForm().getFields().map((field) => {
+    const ctor = field.constructor.name;
+    const kind: FormFieldInfo["kind"] = /CheckBox/i.test(ctor)
+      ? "checkbox"
+      : /Radio/i.test(ctor)
+        ? "radio"
+        : /Dropdown|OptionList/i.test(ctor)
+          ? "dropdown"
+          : /TextField/i.test(ctor)
+            ? "text"
+            : "other";
+    return { name: field.getName(), kind };
+  });
 }

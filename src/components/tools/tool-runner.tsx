@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { AlertCircleIcon, CheckCircle2Icon, DownloadIcon, Loader2Icon, SparklesIcon } from "lucide-react";
 import { ClickPlacePreview, PageBoard } from "@/components/tools/page-board";
+import { InkBoard } from "@/components/tools/ink-board";
 import { SignaturePad } from "@/components/tools/signature-pad";
 import { FileUploader } from "@/components/tools/uploader";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -17,11 +18,13 @@ import { track } from "@/lib/analytics";
 import { formatBytes } from "@/lib/format";
 import { PdfHubError } from "@/lib/pdf/errors";
 import { bytesOf } from "@/lib/pdf/helpers";
-import { listFormFields } from "@/lib/pdf/inspect";
-import { processTool, type ProcessFile, type ProcessResult } from "@/lib/pdf/processor";
+import { listFormFields, type FormFieldInfo } from "@/lib/pdf/inspect";
+import { processToolClient } from "@/lib/pdf/process-client";
+import type { ProcessFile, ProcessResult } from "@/lib/pdf/processor";
 import { nextActionsFor } from "@/lib/tools/recommendations";
 import {
   CLICK_PLACE_TOOLS,
+  INK_TOOLS,
   PAGE_REORDER_TOOLS,
   PAGE_SELECT_TOOLS,
   PASSWORD_CONFIRM_TOOLS,
@@ -48,7 +51,7 @@ export function ToolRunner({ tool, initialFiles }: { tool: ToolDefinition; initi
     Object.fromEntries(tool.settings.map((s) => [s.key, s.defaultValue ?? ""])),
   );
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [formFields, setFormFields] = useState<{ name: string; kind: string }[]>([]);
+  const [formFields, setFormFields] = useState<FormFieldInfo[]>([]);
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
   const [stage, setStage] = useState<Stage>(initialFiles?.length ? "ready" : "idle");
   const [progress, setProgress] = useState({ stage: "", percent: 0 });
@@ -120,7 +123,7 @@ export function ToolRunner({ tool, initialFiles }: { tool: ToolDefinition; initi
     setProgress({ stage: "Starting…", percent: 4 });
     track({ name: "processing_started", tool: tool.slug });
     try {
-      const output = await processTool({
+      const output = await processToolClient({
         tool: tool.slug,
         files,
         settings: {
@@ -195,6 +198,11 @@ export function ToolRunner({ tool, initialFiles }: { tool: ToolDefinition; initi
       </div>
 
       <FileUploader files={files} onChange={onFiles} accepts={tool.accepts} multiple={tool.multiple} disabled={stage === "working"} />
+      {files.length === 0 && (
+        <p className="mt-3 text-sm text-muted-foreground">
+          {tool.howTo[0] ?? "Drop a file to get a real result — nothing is faked."}
+        </p>
+      )}
 
       {pdfFile && PAGE_SELECT_TOOLS.has(tool.slug) && (
         <PageBoard
@@ -202,6 +210,7 @@ export function ToolRunner({ tool, initialFiles }: { tool: ToolDefinition; initi
           mode="select"
           selected={selectedPages}
           defaultAll={["rotate-pdf", "watermark-pdf", "split-pdf"].includes(tool.slug)}
+          defaultLast={SIGNATURE_TOOLS.has(tool.slug)}
           onChange={(pages) => setSettings((s) => ({ ...s, pages: pages.join(",") }))}
         />
       )}
@@ -217,10 +226,22 @@ export function ToolRunner({ tool, initialFiles }: { tool: ToolDefinition; initi
       {pdfFile && CLICK_PLACE_TOOLS.has(tool.slug) && (
         <ClickPlacePreview
           file={pdfFile}
-          x={Number(settings.x || 12)}
-          y={Number(settings.y || 88)}
+          x={Number(settings.x || (SIGNATURE_TOOLS.has(tool.slug) ? 62 : 12))}
+          y={Number(settings.y || (SIGNATURE_TOOLS.has(tool.slug) ? 10 : 88))}
+          marker={SIGNATURE_TOOLS.has(tool.slug) ? settings.signature : undefined}
+          label={
+            SIGNATURE_TOOLS.has(tool.slug)
+              ? "Click the page to place the signature"
+              : tool.slug === "add-image"
+                ? "Click the page to place the image"
+                : "Click the page to place the mark"
+          }
+          page={selectedPages[0] ?? 1}
           onPlace={(x, y) => setSettings((s) => ({ ...s, x: String(Math.round(x)), y: String(Math.round(y)) }))}
         />
+      )}
+      {pdfFile && INK_TOOLS.has(tool.slug) && (
+        <InkBoard file={pdfFile} value={settings.strokes || ""} onChange={(strokes) => setSettings((s) => ({ ...s, strokes }))} />
       )}
       {SIGNATURE_TOOLS.has(tool.slug) && (
         <SignaturePad value={settings.signature || ""} onChange={(signature) => setSettings((s) => ({ ...s, signature }))} />
@@ -230,18 +251,37 @@ export function ToolRunner({ tool, initialFiles }: { tool: ToolDefinition; initi
           <p className="text-sm font-medium">Detected fields</p>
           {formFields.map((field) => (
             <div key={field.name}>
-              <Label htmlFor={`f-${field.name}`}>
-                {field.name} <span className="font-normal text-muted-foreground">({field.kind})</span>
-              </Label>
-              <Input
-                id={`f-${field.name}`}
-                className="mt-1.5 h-9"
-                value={fieldValues[field.name] ?? ""}
-                onChange={(e) => setFieldValues((v) => ({ ...v, [field.name]: e.target.value }))}
-              />
+              {field.kind === "checkbox" ? (
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    className="size-4 accent-primary"
+                    checked={["true", "yes", "on", "1"].includes((fieldValues[field.name] ?? "").toLowerCase())}
+                    onChange={(e) => setFieldValues((v) => ({ ...v, [field.name]: e.target.checked ? "true" : "false" }))}
+                  />
+                  {field.name}
+                </label>
+              ) : (
+                <>
+                  <Label htmlFor={`f-${field.name}`}>
+                    {field.name} <span className="font-normal text-muted-foreground">({field.kind})</span>
+                  </Label>
+                  <Input
+                    id={`f-${field.name}`}
+                    className="mt-1.5 h-9"
+                    value={fieldValues[field.name] ?? ""}
+                    onChange={(e) => setFieldValues((v) => ({ ...v, [field.name]: e.target.value }))}
+                  />
+                </>
+              )}
             </div>
           ))}
         </div>
+      )}
+      {tool.slug === "fill-pdf" && pdfFile && formFields.length === 0 && (
+        <p className="mt-4 text-sm text-muted-foreground">
+          No fillable fields found. This file is probably a flat scan — use Add Text instead.
+        </p>
       )}
 
       {tool.settings.length > 0 && (
@@ -250,6 +290,8 @@ export function ToolRunner({ tool, initialFiles }: { tool: ToolDefinition; initi
             if ((PAGE_SELECT_TOOLS.has(tool.slug) || PAGE_REORDER_TOOLS.has(tool.slug)) && (setting.key === "pages" || setting.key === "order")) {
               return null;
             }
+            if (CLICK_PLACE_TOOLS.has(tool.slug) && (setting.key === "x" || setting.key === "y")) return null;
+            if (setting.key === "strokes" || setting.key === "signature") return null;
             if (tool.slug === "fill-pdf" && formFields.length && setting.key === "value") return null;
             return (
               <div key={setting.key} className={setting.type === "textarea" ? "sm:col-span-2" : undefined}>

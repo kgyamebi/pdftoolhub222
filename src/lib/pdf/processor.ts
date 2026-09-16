@@ -7,6 +7,7 @@ import {
 import JSZip from "jszip";
 import mammoth from "mammoth";
 import {
+  LineCapStyle,
   PDFDocument,
   StandardFonts,
   degrees,
@@ -14,6 +15,7 @@ import {
 } from "pdf-lib";
 import * as XLSX from "xlsx";
 import { PdfHubError } from "@/lib/pdf/errors";
+import { parseStrokes } from "@/lib/pdf/strokes";
 import {
   bytesOf,
   copyPages,
@@ -64,6 +66,10 @@ function assertNotAborted(signal?: AbortSignal) {
 
 function progress(onProgress: ProgressFn | undefined, stage: string, percent: number) {
   onProgress?.({ stage, percent: Math.max(0, Math.min(100, Math.round(percent))) });
+}
+
+async function yieldToMain() {
+  await new Promise<void>((resolve) => setTimeout(resolve, 0));
 }
 
 function downloadBlob(bytes: Uint8Array, type: string): Blob {
@@ -142,6 +148,7 @@ async function pdfPagesToImages(
     assertNotAborted(signal);
     progress(onProgress, `Rendering page ${i} of ${pdf.numPages}`, (i / pdf.numPages) * 90);
     const canvas = await renderPageCanvas(bytes, i, 2);
+    await yieldToMain();
     const imgBytes = await canvasToBytes(canvas, mime, 0.88);
     out.push({
       name: stampName(file.name, `page-${i}`, ext),
@@ -190,6 +197,7 @@ async function compressPdf(file: File, quality: "low" | "medium" | "high", targe
       const img = await out.embedJpg(jpg);
       const p = out.addPage([img.width, img.height]);
       p.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
+      await yieldToMain();
     }
     const candidate = await savePdf(out);
     if (candidate.byteLength < best.byteLength) best = candidate;
@@ -579,8 +587,7 @@ async function handleTool(req: ProcessRequest): Promise<ProcessResult> {
       });
       return { local: true, files: [{ name: stampName(primary.name, "highlighted"), blob: downloadBlob(bytes, "application/pdf"), mime: "application/pdf" }] };
     }
-    case "add-shapes":
-    case "draw-on-pdf": {
+    case "add-shapes": {
       const bytes = await overlayOnPages(primary, settings, (page, width, height) => {
         page.drawRectangle({
           x: width * 0.12,
@@ -593,24 +600,71 @@ async function handleTool(req: ProcessRequest): Promise<ProcessResult> {
       });
       return { local: true, files: [{ name: stampName(primary.name, "shapes"), blob: downloadBlob(bytes, "application/pdf"), mime: "application/pdf" }] };
     }
+    case "draw-on-pdf": {
+      const strokes = parseStrokes(String(settings.strokes || ""));
+      const bytes = await overlayOnPages(primary, settings, (page, width, height) => {
+        if (strokes.length) {
+          for (const stroke of strokes) {
+            for (let i = 1; i < stroke.points.length; i++) {
+              const a = stroke.points[i - 1];
+              const b = stroke.points[i];
+              page.drawLine({
+                start: { x: (a.x / 100) * width, y: (a.y / 100) * height },
+                end: { x: (b.x / 100) * width, y: (b.y / 100) * height },
+                thickness: 1.8,
+                color: rgb(0.7, 0.33, 0.16),
+                lineCap: LineCapStyle.Round,
+              });
+            }
+          }
+          return;
+        }
+        page.drawRectangle({
+          x: width * 0.12,
+          y: height * 0.18,
+          width: width * 0.76,
+          height: height * 0.22,
+          borderColor: rgb(0.7, 0.33, 0.16),
+          borderWidth: 2,
+        });
+      });
+      return { local: true, files: [{ name: stampName(primary.name, "drawn"), blob: downloadBlob(bytes, "application/pdf"), mime: "application/pdf" }] };
+    }
     case "sign-pdf":
     case "add-signature": {
+      const doc = await loadPdf(await bytesOf(primary));
+      const pageCount = doc.getPageCount();
+      const pages = String(settings.pages || "").trim()
+        ? parsePageRange(String(settings.pages), pageCount)
+        : [Math.max(0, pageCount - 1)];
       const dataUrl = String(settings.signature || "");
-      const bytes = await overlayOnPages(primary, settings, async (page, width) => {
+      const xPct = Number(settings.x ?? 62);
+      const yPct = Number(settings.y ?? 10);
+      for (const i of pages) {
+        const page = doc.getPage(i);
+        const { width, height } = page.getSize();
+        const x = (width * Math.min(92, Math.max(2, xPct))) / 100;
+        const y = (height * Math.min(92, Math.max(2, yPct))) / 100;
         if (dataUrl.startsWith("data:image")) {
           const raw = dataUrl.split(",")[1] ?? "";
           const pngBytes = Uint8Array.from(atob(raw), (c) => c.charCodeAt(0));
-          const png = await page.doc.embedPng(pngBytes);
+          const png = await doc.embedPng(pngBytes);
           const w = Math.min(180, width * 0.32);
           const h = (png.height / png.width) * w;
-          page.drawImage(png, { x: width - w - 48, y: 36, width: w, height: h });
-          return;
+          page.drawImage(png, { x, y, width: w, height: h });
+        } else {
+          const text = String(settings.text || "Signed");
+          const font = await doc.embedFont(StandardFonts.TimesRomanItalic);
+          page.drawText(text, { x, y: y + 6, size: 18, font, color: rgb(0.15, 0.2, 0.45) });
+          page.drawLine({
+            start: { x, y },
+            end: { x: Math.min(width - 24, x + 172), y },
+            thickness: 1,
+            color: rgb(0.15, 0.2, 0.45),
+          });
         }
-        const text = String(settings.text || "Signed");
-        const font = await page.doc.embedFont(StandardFonts.TimesRomanItalic);
-        page.drawText(text, { x: width - 220, y: 48, size: 18, font, color: rgb(0.15, 0.2, 0.45) });
-        page.drawLine({ start: { x: width - 220, y: 42 }, end: { x: width - 48, y: 42 }, thickness: 1, color: rgb(0.15, 0.2, 0.45) });
-      });
+      }
+      const bytes = await savePdf(doc);
       return { local: true, files: [{ name: stampName(primary.name, "signed"), blob: downloadBlob(bytes, "application/pdf"), mime: "application/pdf" }] };
     }
     case "protect-pdf":
@@ -640,18 +694,31 @@ async function handleTool(req: ProcessRequest): Promise<ProcessResult> {
       }
       const fallback = String(settings.value || "");
       for (const field of fields) {
-        const value = named[field.getName()] ?? fallback;
-        if (!value) continue;
+        const name = field.getName();
+        const value = named[name] ?? fallback;
         try {
-          form.getTextField(field.getName()).setText(value);
+          form.getTextField(name).setText(value);
           continue;
         } catch {
           /* not text */
         }
         try {
-          const box = form.getCheckBox(field.getName());
-          if (value === "true" || value === "yes" || value === "on") box.check();
+          const box = form.getCheckBox(name);
+          if (["true", "yes", "on", "1"].includes(value.toLowerCase())) box.check();
           else box.uncheck();
+          continue;
+        } catch {
+          /* not checkbox */
+        }
+        if (!value) continue;
+        try {
+          form.getDropdown(name).select(value);
+          continue;
+        } catch {
+          /* not dropdown */
+        }
+        try {
+          form.getRadioGroup(name).select(value);
         } catch {
           /* ignore other field types */
         }
@@ -673,6 +740,9 @@ async function handleTool(req: ProcessRequest): Promise<ProcessResult> {
       page.drawText("Email", { x: 48, y: height - 150, size: 11, font });
       const email = form.createTextField("email");
       email.addToPage(page, { x: 48, y: height - 178, width: 280, height: 22 });
+      page.drawText("I agree", { x: 72, y: height - 220, size: 11, font });
+      const agree = form.createCheckBox("agree");
+      agree.addToPage(page, { x: 48, y: height - 224, width: 16, height: 16 });
       const bytes = await savePdf(doc);
       return { local: true, files: [{ name: stampName(primary.name, "form"), blob: downloadBlob(bytes, "application/pdf"), mime: "application/pdf" }] };
     }
@@ -687,6 +757,7 @@ async function handleTool(req: ProcessRequest): Promise<ProcessResult> {
         const canvas = await renderPageCanvas(await bytesOf(primary), pages[n] + 1, 2);
         const result = await Tesseract.recognize(canvas, "eng");
         chunks.push(result.data.text.trim());
+        await yieldToMain();
       }
       const text = chunks.join("\n\n");
       const bytes = await textDocument("OCR result", text || "No text detected.");
@@ -768,7 +839,9 @@ async function stampImage(req: ProcessRequest): Promise<ProcessResult> {
     const { width, height } = page.getSize();
     const w = Math.min(img.width, width * 0.4);
     const h = (img.height / img.width) * w;
-    page.drawImage(img, { x: Number(req.settings.x || 36), y: height - h - Number(req.settings.y || 36), width: w, height: h });
+    const xPct = Number(req.settings.x ?? 8);
+    const yPct = Number(req.settings.y ?? 72);
+    page.drawImage(img, { x: (width * xPct) / 100, y: (height * yPct) / 100, width: w, height: h });
   }
   const bytes = await savePdf(doc);
   return { local: true, files: [{ name: stampName(pdfFile.name, "image"), blob: downloadBlob(bytes, "application/pdf"), mime: "application/pdf" }] };

@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useId, useState } from "react";
+import { useCallback, useId, useRef, useState } from "react";
 import { ChevronDownIcon, ChevronUpIcon, FileIcon, Trash2Icon, UploadIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatBytes } from "@/lib/format";
+import { moveIndex } from "@/lib/pdf/reorder";
 import { acceptAttribute, isAllowedFile, type AcceptKind } from "@/lib/security/validate";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +24,7 @@ export function FileUploader({
   const id = useId();
   const [drag, setDrag] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const dragFrom = useRef<number | null>(null);
 
   const add = useCallback(
     (incoming: FileList | File[]) => {
@@ -95,7 +97,22 @@ export function FileUploader({
       {files.length > 0 && (
         <ul className="mt-4 space-y-2">
           {files.map((file, index) => (
-            <li key={`${file.name}-${file.size}-${index}`} className="flex items-center gap-3 rounded-xl border bg-card px-3 py-2">
+            <li
+              key={`${file.name}-${file.size}-${index}`}
+              className="flex items-center gap-3 rounded-xl border bg-card px-3 py-2"
+              draggable={multiple}
+              onDragStart={() => {
+                dragFrom.current = index;
+              }}
+              onDragOver={(e) => {
+                if (multiple) e.preventDefault();
+              }}
+              onDrop={() => {
+                if (!multiple || dragFrom.current == null) return;
+                onChange(moveIndex(files, dragFrom.current, index));
+                dragFrom.current = null;
+              }}
+            >
               <FileIcon className="size-4 text-primary" />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{file.name}</p>

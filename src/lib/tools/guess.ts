@@ -27,4 +27,12 @@ export const PAGE_REORDER_TOOLS = new Set(["rearrange-pdf-pages"]);
 
 export const SIGNATURE_TOOLS = new Set(["sign-pdf", "add-signature"]);
 export const PASSWORD_CONFIRM_TOOLS = new Set(["protect-pdf", "encrypt-pdf", "add-password"]);
-export const CLICK_PLACE_TOOLS = new Set(["add-text", "edit-pdf", "highlight-pdf"]);
+export const CLICK_PLACE_TOOLS = new Set([
+  "add-text",
+  "edit-pdf",
+  "highlight-pdf",
+  "sign-pdf",
+  "add-signature",
+  "add-image",
+]);
+export const INK_TOOLS = new Set(["draw-on-pdf"]);

@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { bytesOf } from "@/lib/pdf/helpers";
 import { renderThumbnails, type Thumb } from "@/lib/pdf/inspect";
+import { renderPageCanvas } from "@/lib/pdf/pdfjs";
+import { moveIndex } from "@/lib/pdf/reorder";
 import { cn } from "@/lib/utils";
 
 export function PageBoard({
@@ -13,16 +15,19 @@ export function PageBoard({
   selected,
   onChange,
   defaultAll = false,
+  defaultLast = false,
 }: {
   file: File;
   mode: "select" | "reorder";
   selected: number[];
   onChange: (pages: number[]) => void;
   defaultAll?: boolean;
+  defaultLast?: boolean;
 }) {
   const [thumbs, setThumbs] = useState<Thumb[]>([]);
   const [count, setCount] = useState(0);
   const [status, setStatus] = useState("Reading pages…");
+  const dragFrom = useRef<number | null>(null);
 
   useEffect(() => {
     let live = true;
@@ -36,6 +41,8 @@ export function PageBoard({
         setStatus("");
         if (!selected.length && (mode === "reorder" || defaultAll)) {
           onChange(Array.from({ length: result.pageCount }, (_, i) => i + 1));
+        } else if (!selected.length && defaultLast && result.pageCount) {
+          onChange([result.pageCount]);
         }
       })
       .catch(() => {
@@ -54,11 +61,7 @@ export function PageBoard({
   }
 
   function move(index: number, dir: -1 | 1) {
-    const next = [...selected];
-    const swap = index + dir;
-    if (swap < 0 || swap >= next.length) return;
-    [next[index], next[swap]] = [next[swap], next[index]];
-    onChange(next);
+    onChange(moveIndex(selected, index, index + dir));
   }
 
   const shown = mode === "reorder" ? selected : thumbs.map((t) => t.page);
@@ -67,7 +70,7 @@ export function PageBoard({
     <div className="mt-5">
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm font-medium">
-          {mode === "reorder" ? "Drag order with the arrows" : "Click pages to include"}
+          {mode === "reorder" ? "Drag pages to set the order" : "Click pages to include"}
         </p>
         {mode === "select" && (
           <div className="flex gap-2">
@@ -86,13 +89,29 @@ export function PageBoard({
           const thumb = thumbs.find((t) => t.page === page);
           const active = mode === "reorder" || selected.includes(page);
           return (
-            <li key={`${page}-${index}`} className="relative">
+            <li
+              key={`${page}-${index}`}
+              className="relative"
+              draggable={mode === "reorder"}
+              onDragStart={() => {
+                dragFrom.current = index;
+              }}
+              onDragOver={(e) => {
+                if (mode === "reorder") e.preventDefault();
+              }}
+              onDrop={() => {
+                if (mode !== "reorder" || dragFrom.current == null) return;
+                onChange(moveIndex(selected, dragFrom.current, index));
+                dragFrom.current = null;
+              }}
+            >
               <button
                 type="button"
                 onClick={() => toggle(page)}
                 className={cn(
                   "block w-full overflow-hidden rounded-lg border bg-background text-left ring-offset-2 focus-visible:ring-3 focus-visible:ring-ring/50",
                   active ? "border-primary ring-1 ring-primary/40" : "opacity-50",
+                  mode === "reorder" && "cursor-grab active:cursor-grabbing",
                 )}
               >
                 {thumb ? (
@@ -129,32 +148,40 @@ export function ClickPlacePreview({
   x,
   y,
   onPlace,
+  label = "Click the page to place the mark",
+  marker,
+  page = 1,
 }: {
   file: File;
   x: number;
   y: number;
   onPlace: (x: number, y: number) => void;
+  label?: string;
+  marker?: string;
+  page?: number;
 }) {
   const [url, setUrl] = useState<string>();
   useEffect(() => {
     let live = true;
     bytesOf(file)
-      .then((bytes) => renderThumbnails(bytes, { max: 1, scale: 0.9 }))
-      .then((result) => {
-        if (live) setUrl(result.thumbs[0]?.url);
+      .then((bytes) => renderPageCanvas(bytes, Math.max(1, page), 0.95))
+      .then((canvas) => {
+        if (live) setUrl(canvas.toDataURL("image/jpeg", 0.72));
       })
       .catch(() => undefined);
     return () => {
       live = false;
     };
-  }, [file]);
-  if (!url) return null;
+  }, [file, page]);
+  if (!url) {
+    return <p className="mt-4 text-sm text-muted-foreground">Preparing a page preview…</p>;
+  }
   return (
     <div className="mt-4">
-      <p className="mb-2 text-sm font-medium">Click the page to place text</p>
+      <p className="mb-2 text-sm font-medium">{label}</p>
       <button
         type="button"
-        className="relative block overflow-hidden rounded-xl border"
+        className="relative block w-full overflow-hidden rounded-xl border"
         onClick={(e) => {
           const rect = e.currentTarget.getBoundingClientRect();
           onPlace(((e.clientX - rect.left) / rect.width) * 100, (1 - (e.clientY - rect.top) / rect.height) * 100);
@@ -162,10 +189,20 @@ export function ClickPlacePreview({
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={url} alt="Page preview" className="w-full" />
-        <span
-          className="pointer-events-none absolute size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary ring-2 ring-white"
-          style={{ left: `${x}%`, bottom: `${y}%` }}
-        />
+        {marker ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={marker}
+            alt=""
+            className="pointer-events-none absolute h-12 w-auto -translate-x-1/2 translate-y-1/2"
+            style={{ left: `${x}%`, bottom: `${y}%` }}
+          />
+        ) : (
+          <span
+            className="pointer-events-none absolute size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary ring-2 ring-white"
+            style={{ left: `${x}%`, bottom: `${y}%` }}
+          />
+        )}
       </button>
     </div>
   );
