@@ -12,7 +12,7 @@ export function toolMetadata(tool: ToolDefinition): Metadata {
   const description = tool.tagline;
   const url = absUrl(`/${tool.slug}`);
   return {
-    title,
+    title: { absolute: title },
     description,
     alternates: { canonical: url },
     openGraph: {
@@ -31,7 +31,7 @@ export function categoryMetadata(category: CategoryDefinition): Metadata {
   const title = `${category.h1} — ${APP_NAME}`;
   const url = absUrl(`/${category.slug}`);
   return {
-    title,
+    title: { absolute: title },
     description: category.tagline,
     alternates: { canonical: url },
     openGraph: { title, description: category.tagline, url, siteName: APP_NAME, type: "website" },

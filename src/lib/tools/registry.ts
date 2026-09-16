@@ -966,9 +966,9 @@ export const TOOLS: ToolDefinition[] = [
     related: ["create-pdf-form", "add-text", "sign-pdf"],
     nextActions: ["sign-pdf", "protect-pdf"],
     phrases: ["fillable pdf", "complete form"],
-    howTo: ["Upload a fillable PDF.", "Enter a value to apply to text fields.", "Download a flattened copy."],
+    howTo: ["Upload a fillable PDF.", "Fill each detected field by name.", "Download a flattened copy."],
     faqs: [{ q: "Why 'no fields'?", a: "Many 'forms' are just drawn lines. Those need Add Text, not Fill PDF." }],
-    guide: { title: "How to fill a PDF form", paragraphs: ["This version applies one value across text fields so you can verify the form is live. A full field-by-field inspector is the next iteration.", privacy] },
+    guide: { title: "How to fill a PDF form", paragraphs: ["When the PDF has real AcroForm fields, we list them by name so you can fill each one, then flatten the result. Drawn lines that only look like a form still need Add Text.", privacy] },
   }),
   t({
     slug: "create-pdf-form",
