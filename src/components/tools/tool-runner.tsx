@@ -201,7 +201,7 @@ export function ToolRunner({ tool, initialFiles }: { tool: ToolDefinition; initi
           file={pdfFile}
           mode="select"
           selected={selectedPages}
-          defaultAll={tool.slug === "rotate-pdf" || tool.slug === "watermark-pdf"}
+          defaultAll={["rotate-pdf", "watermark-pdf", "split-pdf"].includes(tool.slug)}
           onChange={(pages) => setSettings((s) => ({ ...s, pages: pages.join(",") }))}
         />
       )}
