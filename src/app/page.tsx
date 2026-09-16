@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { HomeHero } from "@/components/home/hero";
+import { WelcomeBack } from "@/components/home/welcome-back";
 import { ToolCardRow } from "@/components/tools/tool-card";
 import { JsonLd } from "@/components/tools/tool-article";
 import { buttonVariants } from "@/components/ui/button";
@@ -12,7 +13,15 @@ export default function Home() {
   return (
     <>
       <JsonLd data={softwareAppJsonLd()} />
+      <WelcomeBack />
       <HomeHero />
+      <section className="border-b bg-background">
+        <div className="mx-auto grid max-w-6xl gap-4 px-4 py-6 text-sm sm:grid-cols-3 sm:px-6">
+          <p><strong className="font-medium">No account required.</strong> Compress, merge and convert without signing up.</p>
+          <p><strong className="font-medium">Files stay on this device.</strong> Core tools never upload your PDF.</p>
+          <p><strong className="font-medium">Then keep going.</strong> Results land in a session workspace with a useful next step.</p>
+        </div>
+      </section>
       <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
         <h2 className="font-heading text-2xl font-semibold">Browse by job</h2>
         <p className="mt-2 max-w-2xl text-muted-foreground">

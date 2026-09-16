@@ -24,6 +24,7 @@ import {
   savePdf,
   stampName,
   textDocument,
+  htmlDocument,
   wrapText,
 } from "@/lib/pdf/helpers";
 import { extractPdfText, getPdfJs, renderPageCanvas } from "@/lib/pdf/pdfjs";
@@ -43,6 +44,7 @@ export type ProcessResult = {
   warnings?: string[];
   local: boolean;
   pageCount?: number;
+  originalBytes?: number;
 };
 
 export type ProcessRequest = {
@@ -434,9 +436,9 @@ async function handleTool(req: ProcessRequest): Promise<ProcessResult> {
     }
     case "word-to-pdf": {
       progress(onProgress, "Reading Word document", 20);
-      const result = await mammoth.extractRawText({ arrayBuffer: await primary.arrayBuffer() });
-      const bytes = await textDocument(primary.name.replace(/\.[^.]+$/, ""), result.value || "Empty document");
-      return { local: true, files: [{ name: stampName(primary.name, "from-word"), blob: downloadBlob(bytes, "application/pdf"), mime: "application/pdf" }], warnings: ["Layout, fonts and images from Word are simplified into a clean text PDF."] };
+      const html = await mammoth.convertToHtml({ arrayBuffer: await primary.arrayBuffer() });
+      const bytes = await htmlDocument(primary.name.replace(/\.[^.]+$/, ""), html.value || "<p>Empty document</p>");
+      return { local: true, files: [{ name: stampName(primary.name, "from-word"), blob: downloadBlob(bytes, "application/pdf"), mime: "application/pdf" }], warnings: ["Headings and paragraphs are kept. Complex Word layout, columns and embedded objects are simplified."] };
     }
     case "pdf-to-word": {
       progress(onProgress, "Extracting text", 30);
@@ -593,8 +595,18 @@ async function handleTool(req: ProcessRequest): Promise<ProcessResult> {
     }
     case "sign-pdf":
     case "add-signature": {
-      const text = String(settings.text || "Signed");
+      const dataUrl = String(settings.signature || "");
       const bytes = await overlayOnPages(primary, settings, async (page, width) => {
+        if (dataUrl.startsWith("data:image")) {
+          const raw = dataUrl.split(",")[1] ?? "";
+          const pngBytes = Uint8Array.from(atob(raw), (c) => c.charCodeAt(0));
+          const png = await page.doc.embedPng(pngBytes);
+          const w = Math.min(180, width * 0.32);
+          const h = (png.height / png.width) * w;
+          page.drawImage(png, { x: width - w - 48, y: 36, width: w, height: h });
+          return;
+        }
+        const text = String(settings.text || "Signed");
         const font = await page.doc.embedFont(StandardFonts.TimesRomanItalic);
         page.drawText(text, { x: width - 220, y: 48, size: 18, font, color: rgb(0.15, 0.2, 0.45) });
         page.drawLine({ start: { x: width - 220, y: 42 }, end: { x: width - 48, y: 42 }, thickness: 1, color: rgb(0.15, 0.2, 0.45) });
@@ -620,18 +632,33 @@ async function handleTool(req: ProcessRequest): Promise<ProcessResult> {
       if (!fields.length) {
         throw new PdfHubError("no_fields", "This PDF has no fillable form fields.", "Use Create PDF Form to add fields, or Add Text for a visual overlay.");
       }
-      const value = String(settings.value || "");
+      let named: Record<string, string> = {};
+      try {
+        named = JSON.parse(String(settings.fields || "{}")) as Record<string, string>;
+      } catch {
+        named = {};
+      }
+      const fallback = String(settings.value || "");
       for (const field of fields) {
+        const value = named[field.getName()] ?? fallback;
+        if (!value) continue;
         try {
-          const textField = form.getTextField(field.getName());
-          textField.setText(value || " ");
+          form.getTextField(field.getName()).setText(value);
+          continue;
         } catch {
-          /* not a text field */
+          /* not text */
+        }
+        try {
+          const box = form.getCheckBox(field.getName());
+          if (value === "true" || value === "yes" || value === "on") box.check();
+          else box.uncheck();
+        } catch {
+          /* ignore other field types */
         }
       }
       form.flatten();
       const bytes = await savePdf(doc);
-      return { local: true, files: [{ name: stampName(primary.name, "filled"), blob: downloadBlob(bytes, "application/pdf"), mime: "application/pdf" }], warnings: value ? undefined : ["Empty values were written so you can inspect field names. Enter text to fill them."] };
+      return { local: true, files: [{ name: stampName(primary.name, "filled"), blob: downloadBlob(bytes, "application/pdf"), mime: "application/pdf" }] };
     }
     case "create-pdf-form": {
       const doc = files[0]?.name.toLowerCase().endsWith(".pdf") ? await loadPdf(await bytesOf(primary)) : await PDFDocument.create();
@@ -752,7 +779,10 @@ export async function processTool(req: ProcessRequest): Promise<ProcessResult> {
     if (req.tool === "add-image") return await stampImage(req);
     const result = await handleTool(req);
     req.onProgress?.({ stage: "Your file is ready.", percent: 100 });
-    return result;
+    return {
+      ...result,
+      originalBytes: req.files.reduce((n, file) => n + file.size, 0),
+    };
   } catch (error) {
     if (error instanceof PdfHubError) throw error;
     const { toUserError } = await import("@/lib/pdf/errors");

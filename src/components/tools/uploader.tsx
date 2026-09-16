@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useId, useState } from "react";
-import { FileIcon, Trash2Icon, UploadIcon } from "lucide-react";
+import { ChevronDownIcon, ChevronUpIcon, FileIcon, Trash2Icon, UploadIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatBytes } from "@/lib/format";
 import { acceptAttribute, isAllowedFile, type AcceptKind } from "@/lib/security/validate";
@@ -40,7 +40,7 @@ export function FileUploader({
   );
 
   return (
-    <div>
+    <div data-dropzone>
       <div
         onDragEnter={(e) => {
           e.preventDefault();
@@ -103,6 +103,38 @@ export function FileUploader({
                   {formatBytes(file.size)} · {file.type || "file"}
                 </p>
               </div>
+              {multiple && (
+                <div className="flex flex-col">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    aria-label="Move up"
+                    disabled={index === 0}
+                    onClick={() => {
+                      const next = [...files];
+                      [next[index - 1], next[index]] = [next[index], next[index - 1]];
+                      onChange(next);
+                    }}
+                  >
+                    <ChevronUpIcon />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    aria-label="Move down"
+                    disabled={index === files.length - 1}
+                    onClick={() => {
+                      const next = [...files];
+                      [next[index + 1], next[index]] = [next[index], next[index + 1]];
+                      onChange(next);
+                    }}
+                  >
+                    <ChevronDownIcon />
+                  </Button>
+                </div>
+              )}
               <Button
                 type="button"
                 variant="ghost"

@@ -154,4 +154,49 @@ export async function textDocument(title: string, body: string): Promise<Uint8Ar
   return savePdf(doc);
 }
 
+function decodeHtml(raw: string): string {
+  return raw
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export async function htmlDocument(title: string, html: string): Promise<Uint8Array> {
+  const blocks = [...html.matchAll(/<(h[1-3]|p|li)[^>]*>([\s\S]*?)<\/\1>/gi)].map((m) => ({
+    tag: m[1].toLowerCase(),
+    text: decodeHtml(m[2]),
+  })).filter((b) => b.text);
+  if (!blocks.length) return textDocument(title, decodeHtml(html) || "Empty document");
+  const doc = await PDFDocument.create();
+  const font = await doc.embedFont(StandardFonts.Helvetica);
+  const bold = await doc.embedFont(StandardFonts.HelveticaBold);
+  let page = doc.addPage([612, 792]);
+  let y = 740;
+  page.drawText(title.slice(0, 90), { x: 54, y, size: 16, font: bold, color: rgb(0.12, 0.14, 0.18) });
+  y -= 26;
+  for (const block of blocks) {
+    const heading = block.tag.startsWith("h");
+    const size = block.tag === "h1" ? 16 : block.tag === "h2" ? 13 : block.tag === "h3" ? 12 : 11;
+    const used = heading ? bold : font;
+    const lines = wrapText(block.text, used, size, 504);
+    if (heading) y -= 8;
+    for (const line of lines) {
+      if (y < 54) {
+        page = doc.addPage([612, 792]);
+        y = 740;
+      }
+      page.drawText(line, { x: 54, y, size, font: used, color: rgb(0.12, 0.14, 0.18) });
+      y -= size + 4;
+    }
+    y -= 4;
+  }
+  return savePdf(doc);
+}
+
 export { StandardFonts, rgb, degrees, PDFDocument };

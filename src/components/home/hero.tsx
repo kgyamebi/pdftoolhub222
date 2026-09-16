@@ -8,6 +8,7 @@ import { FileUploader } from "@/components/tools/uploader";
 import { buttonVariants } from "@/components/ui/button";
 import { popularTools } from "@/lib/tools/registry";
 import { ToolCardRow } from "@/components/tools/tool-card";
+import { guessTool } from "@/lib/tools/guess";
 import { saveWorkspaceDoc } from "@/lib/workspace/store";
 import { cn } from "@/lib/utils";
 
@@ -39,7 +40,7 @@ export function HomeHero() {
             Everything you need to work with PDFs.
           </h1>
           <p className="mt-4 max-w-lg text-lg text-muted-foreground">
-            Convert, compress, edit, organize, protect and understand your documents — quickly and securely.
+            Convert, compress, edit, organize, protect and understand your documents — in the browser, without an account.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link href="/pdf-tools" className={cn(buttonVariants({ size: "lg" }))}>
@@ -92,15 +93,4 @@ export function HomeHero() {
       </div>
     </section>
   );
-}
-
-function guessTool(file: File): string {
-  const n = file.name.toLowerCase();
-  if (n.endsWith(".jpg") || n.endsWith(".jpeg")) return "jpg-to-pdf";
-  if (n.endsWith(".png")) return "png-to-pdf";
-  if (n.endsWith(".webp")) return "webp-to-pdf";
-  if (n.endsWith(".docx") || n.endsWith(".doc")) return "word-to-pdf";
-  if (n.endsWith(".xlsx") || n.endsWith(".xls")) return "excel-to-pdf";
-  if (n.endsWith(".pptx") || n.endsWith(".ppt")) return "powerpoint-to-pdf";
-  return "compress-pdf";
 }
