@@ -2,7 +2,6 @@ import Link from "next/link";
 import {
   Breadcrumb,
   BreadcrumbItem,
-  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
@@ -23,13 +22,17 @@ export function ToolArticle({ tool, related }: { tool: ToolDefinition; related: 
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink render={<Link href="/" />}>Home</BreadcrumbLink>
+            <Link href="/" className="transition-colors hover:text-foreground">
+              Home
+            </Link>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           {category && (
             <>
               <BreadcrumbItem>
-                <BreadcrumbLink render={<Link href={`/${category.slug}`} />}>{category.name}</BreadcrumbLink>
+                <Link href={`/${category.slug}`} className="transition-colors hover:text-foreground">
+                  {category.name}
+                </Link>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
             </>

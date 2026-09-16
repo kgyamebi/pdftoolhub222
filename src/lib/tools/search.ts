@@ -1,3 +1,4 @@
+import { SLUG_ALIASES } from "@/lib/tools/aliases";
 import { TOOLS, type ToolDefinition } from "@/lib/tools/registry";
 
 const STOP = new Set(["a", "an", "the", "to", "my", "this", "these", "into", "of", "for", "and", "or", "pdf", "file", "files", "document", "please"]);
@@ -17,6 +18,10 @@ export function searchTools(query: string, limit = 8): ToolDefinition[] {
     let score = 0;
     const hay = `${tool.name} ${tool.slug} ${tool.tagline} ${tool.description} ${tool.phrases.join(" ")}`.toLowerCase();
     if (tool.slug === q || tool.name.toLowerCase() === q) score += 50;
+    if (SLUG_ALIASES[q] === tool.slug) score += 45;
+    if (Object.entries(SLUG_ALIASES).some(([alias, slug]) => slug === tool.slug && (q === alias || q.includes(alias)))) {
+      score += 12;
+    }
     if (hay.includes(q)) score += 20;
     for (const word of words) {
       if (tool.slug.includes(word)) score += 8;

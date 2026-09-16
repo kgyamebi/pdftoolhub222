@@ -4,7 +4,7 @@ import Link from "next/link";
 import { MenuIcon } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { ToolSearch } from "@/components/search/tool-search";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { CATEGORIES } from "@/lib/tools/registry";
@@ -46,7 +46,10 @@ export function Header() {
             Account
           </Link>
           <Sheet>
-            <SheetTrigger render={<Button variant="ghost" size="icon" className="lg:hidden" />}>
+            <SheetTrigger
+              className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "lg:hidden")}
+              aria-label="Open menu"
+            >
               <MenuIcon />
               <span className="sr-only">Open menu</span>
             </SheetTrigger>

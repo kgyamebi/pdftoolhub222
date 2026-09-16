@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ArrowRightIcon, LockIcon, SmartphoneIcon, ZapIcon } from "lucide-react";
+import { ToolSearch } from "@/components/search/tool-search";
 import { FileUploader } from "@/components/tools/uploader";
 import { buttonVariants } from "@/components/ui/button";
 import { popularTools } from "@/lib/tools/registry";
@@ -42,7 +43,10 @@ export function HomeHero() {
           <p className="mt-4 max-w-lg text-lg text-muted-foreground">
             Convert, compress, edit, organize, protect and understand your documents — in the browser, without an account.
           </p>
-          <div className="mt-6 flex flex-wrap gap-3">
+          <div className="mt-6 max-w-lg">
+            <ToolSearch />
+          </div>
+          <div className="mt-5 flex flex-wrap gap-3">
             <Link href="/pdf-tools" className={cn(buttonVariants({ size: "lg" }))}>
               Explore all tools
             </Link>

@@ -14,6 +14,18 @@ export default function NotFound() {
       <div className="mt-6">
         <ToolSearch />
       </div>
+      <div className="mt-4 flex flex-wrap gap-2">
+        {[
+          { href: "/compress-pdf", label: "Compress PDF" },
+          { href: "/merge-pdf", label: "Merge PDF" },
+          { href: "/extract-pdf-pages", label: "Extract pages" },
+          { href: "/sign-pdf", label: "Sign PDF" },
+        ].map((item) => (
+          <Link key={item.href} href={item.href} className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
+            {item.label}
+          </Link>
+        ))}
+      </div>
       <Link href="/" className={cn(buttonVariants({ className: "mt-6" }))}>
         Back to homepage
       </Link>

@@ -18,6 +18,11 @@ test("natural language search finds jpg to pdf", () => {
   assert.ok(hits.some((h) => h.slug === "jpg-to-pdf"));
 });
 
+test("typed aliases resolve in search", () => {
+  assert.equal(searchTools("extract-pages")[0]?.slug, "extract-pdf-pages");
+  assert.equal(searchTools("combine-pdf")[0]?.slug, "merge-pdf");
+});
+
 test("next actions after compress are contextual", () => {
   const next = nextActionsFor("compress-pdf");
   assert.ok(next.length > 0);

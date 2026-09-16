@@ -1,5 +1,6 @@
 import { Suspense } from "react";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { canonicalToolSlug } from "@/lib/tools/aliases";
 import type { Metadata } from "next";
 import { JsonLd, relatedTools, ToolArticle } from "@/components/tools/tool-article";
 import { ToolRunnerGate } from "@/components/tools/tool-runner-gate";
@@ -20,7 +21,8 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const tool = getTool(slug);
+  const aliased = canonicalToolSlug(slug);
+  const tool = getTool(aliased ?? slug);
   if (tool) return toolMetadata(tool);
   const category = getCategory(slug);
   if (category) return categoryMetadata(category);
@@ -29,6 +31,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function SlugPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const aliased = canonicalToolSlug(slug);
+  if (aliased) redirect(`/${aliased}`);
   const tool = getTool(slug);
   const category = getCategory(slug);
 

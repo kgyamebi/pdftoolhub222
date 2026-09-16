@@ -1,9 +1,16 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { canonicalToolSlug } from "../src/lib/tools/aliases.ts";
 import { guessTool } from "../src/lib/tools/guess.ts";
 import { htmlDocument } from "../src/lib/pdf/helpers.ts";
 import { PDFDocument } from "pdf-lib";
 import { processTool } from "../src/lib/pdf/processor.ts";
+
+test("public aliases map to canonical tool slugs", () => {
+  assert.equal(canonicalToolSlug("extract-pages"), "extract-pdf-pages");
+  assert.equal(canonicalToolSlug("compress"), "compress-pdf");
+  assert.equal(canonicalToolSlug("extract-pdf-pages"), undefined);
+});
 
 test("guessTool maps photos and office files", () => {
   assert.equal(guessTool(new File([], "id.jpg")), "jpg-to-pdf");
