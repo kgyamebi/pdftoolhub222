@@ -16,7 +16,7 @@ export default function WorkflowsPage() {
       </p>
       <div className="mt-8 grid gap-4 md:grid-cols-2">
         {WORKFLOWS.map((flow) => (
-          <Link key={flow.slug} href={`/workflows/${flow.slug}`} className="rounded-2xl border bg-card p-6 hover:ring-1 hover:ring-foreground/15">
+          <Link key={flow.slug} href={`/workflows/${flow.slug}`} className="glass hairline rounded-2xl p-6 transition-transform hover:-translate-y-0.5">
             <p className="text-xs tracking-wide text-primary uppercase">{flow.audience}</p>
             <h2 className="mt-1 text-xl font-medium">{flow.name}</h2>
             <p className="mt-2 text-sm text-muted-foreground">{flow.description}</p>

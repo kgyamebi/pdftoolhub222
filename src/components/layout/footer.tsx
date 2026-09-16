@@ -4,12 +4,12 @@ import { CATEGORIES } from "@/lib/tools/registry";
 
 export function Footer() {
   return (
-    <footer className="mt-auto border-t bg-card">
+    <footer className="mt-auto border-t bg-card/60">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-4">
         <div className="md:col-span-1">
           <Logo />
           <p className="mt-3 max-w-xs text-sm text-muted-foreground">
-            Convert, compress, edit and protect documents in the browser. Your files stay on your device whenever the tool allows it.
+            Convert, compress, edit and protect documents in the browser. Your files stay on your device whenever the tool allows it. Press ⌘K to jump.
           </p>
         </div>
         <div>

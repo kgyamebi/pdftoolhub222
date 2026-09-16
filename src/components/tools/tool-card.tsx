@@ -126,7 +126,7 @@ export function ToolIcon({ name, className }: { name: string; className?: string
 export function ToolCard({ tool }: { tool: ToolDefinition }) {
   return (
     <Link href={`/${tool.slug}`} className="group block h-full rounded-xl focus-visible:ring-3 focus-visible:ring-ring/50">
-      <Card className="h-full transition-colors group-hover:ring-foreground/20">
+      <Card className="h-full border-transparent shadow-[var(--shadow-lift)] transition-transform group-hover:-translate-y-0.5 group-hover:ring-1 group-hover:ring-foreground/15">
         <CardContent className="flex h-full flex-col gap-3">
           <span className="inline-flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
             <ToolIcon name={tool.icon} className="size-5" />

@@ -28,3 +28,8 @@ test("next actions after compress are contextual", () => {
   assert.ok(next.length > 0);
   assert.ok(next.every((t) => t.slug !== "compress-pdf"));
 });
+
+test("need signature and remove pages resolve", () => {
+  assert.ok(searchTools("need signature").some((h) => h.slug === "sign-pdf" || h.slug === "add-signature"));
+  assert.ok(searchTools("remove pages").some((h) => h.slug.includes("extract") || h.slug.includes("delete") || h.slug.includes("split")));
+});

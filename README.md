@@ -22,10 +22,27 @@ npm run dev
 
 Open [http://127.0.0.1:43127](http://127.0.0.1:43127).
 
+Press **⌘K** (or **Ctrl+K**) anywhere for the command palette — natural language like “make PDF smaller” or “need a signature” jumps to a live tool.
+
 ```bash
 npm test
 npm run build
 ```
+
+## Product identity
+
+Files stay on the device. No account is required for core tools. Processing is local whenever the engine allows it. The workspace keeps the latest PDF for about two hours so you can chain compress → sign → protect without starting over.
+
+## Interface
+
+The UI is a design layer on top of the existing processors. Routes, workers, IndexedDB, SEO metadata and PDF engines are unchanged.
+
+- **Homepage:** privacy-first hero, workflow ribbon, clustered tool galaxy
+- **Tool pages:** three-column workspace (session · canvas · next actions) with a mobile thumb dock
+- **Categories:** product stories, then every live tool
+- **Workspace:** continue last task, streak, activity and local files
+- **Trust chrome:** local / no-upload / no-account / auto-delete pills on every key surface
+- **Motion:** Framer Motion with a reduced-motion cutout and a high-contrast mode
 
 ## Environment variables
 

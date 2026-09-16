@@ -12,7 +12,7 @@ export function Logo({ className, markOnly = false }: { className?: string; mark
       {!markOnly && (
         <span className="flex flex-col leading-none">
           <span className="font-heading text-[1.05rem] font-semibold tracking-tight">PDF Tools Hub</span>
-          <span className="mt-0.5 text-[0.65rem] tracking-[0.14em] text-muted-foreground uppercase">Documents in good hands</span>
+          <span className="mt-0.5 text-[0.65rem] tracking-[0.14em] text-muted-foreground uppercase">Files stay here</span>
         </span>
       )}
     </span>

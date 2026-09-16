@@ -59,8 +59,8 @@ export function FileUploader({
           if (!disabled) add(e.dataTransfer.files);
         }}
         className={cn(
-          "rounded-2xl border-2 border-dashed bg-card px-4 py-10 text-center transition-colors",
-          drag ? "border-primary bg-primary/5" : "border-border",
+          "rounded-2xl border-2 border-dashed bg-card px-4 py-10 text-center transition-all",
+          drag ? "border-primary bg-[color-mix(in_oklab,var(--primary)_8%,transparent)] shadow-[0_0_0_6px_color-mix(in_oklab,var(--primary)_12%,transparent)]" : "border-border",
           disabled && "opacity-60",
         )}
       >
@@ -118,6 +118,13 @@ export function FileUploader({
                 <p className="truncate text-sm font-medium">{file.name}</p>
                 <p className="text-xs text-muted-foreground">
                   {formatBytes(file.size)} · {file.type || "file"}
+                </p>
+                <p className="text-[11px] text-[color:var(--trust)]">
+                  {file.size > 40 * 1024 * 1024
+                    ? "Large file — processing stays local, it may take a moment"
+                    : file.name.toLowerCase().endsWith(".pdf")
+                      ? "Ready for local processing"
+                      : "Stays in this browser"}
                 </p>
               </div>
               {multiple && (

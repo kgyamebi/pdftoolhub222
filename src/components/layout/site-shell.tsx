@@ -1,6 +1,7 @@
 import { DropAnywhere } from "@/components/layout/drop-anywhere";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
+import { CommandPalette } from "@/components/chrome/command-palette";
 
 export function SiteShell({ children }: { children: React.ReactNode }) {
   return (
@@ -17,6 +18,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
           {children}
         </main>
         <Footer />
+        <CommandPalette />
       </div>
     </DropAnywhere>
   );

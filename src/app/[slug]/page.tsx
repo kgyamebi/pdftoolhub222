@@ -5,6 +5,8 @@ import type { Metadata } from "next";
 import { JsonLd, relatedTools, ToolArticle } from "@/components/tools/tool-article";
 import { ToolRunnerGate } from "@/components/tools/tool-runner-gate";
 import { ToolCardRow } from "@/components/tools/tool-card";
+import { ToolWorkspace } from "@/components/tools/tool-workspace";
+import { CategoryStory } from "@/components/chrome/category-story";
 import { allSlugs, getCategory, getTool, toolsInCategory } from "@/lib/tools/registry";
 import { breadcrumbJsonLd, categoryMetadata, faqJsonLd, howToJsonLd, toolMetadata } from "@/lib/seo";
 
@@ -50,16 +52,11 @@ export default async function SlugPage({ params }: { params: Promise<{ slug: str
             { name: tool.name, href: `/${tool.slug}` },
           ])}
         />
-        <div className="mx-auto max-w-6xl px-4 pt-8 sm:px-6">
-          <p className="text-xs font-medium tracking-[0.16em] text-primary uppercase">{category?.name ?? "PDF tool"}</p>
-          <h1 className="font-heading mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">{tool.h1}</h1>
-          <p className="mt-3 max-w-2xl text-lg text-muted-foreground">{tool.description}</p>
-          <div className="mt-8">
-            <Suspense fallback={<div className="rounded-2xl border bg-card p-8 text-sm text-muted-foreground">Loading tool…</div>}>
-              <ToolRunnerGate tool={tool} />
-            </Suspense>
-          </div>
-        </div>
+        <ToolWorkspace tool={tool} categoryName={category?.name}>
+          <Suspense fallback={<div className="rounded-2xl border bg-card p-8 text-sm text-muted-foreground">Loading tool…</div>}>
+            <ToolRunnerGate tool={tool} />
+          </Suspense>
+        </ToolWorkspace>
         <ToolArticle tool={tool} related={related} />
         {siblings.length > 0 && (
           <div className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
@@ -74,16 +71,19 @@ export default async function SlugPage({ params }: { params: Promise<{ slug: str
   if (category) {
     const tools = toolsInCategory(category.slug);
     return (
-      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
         <JsonLd
           data={breadcrumbJsonLd([
             { name: "Home", href: "/" },
             { name: category.name, href: `/${category.slug}` },
           ])}
         />
-        <h1 className="font-heading text-3xl font-semibold tracking-tight sm:text-4xl">{category.h1}</h1>
-        <p className="mt-3 max-w-2xl text-lg text-muted-foreground">{category.description}</p>
-        <ToolCardRow className="mt-8" tools={tools} />
+        <CategoryStory category={category} count={tools.length} />
+        <h2 className="font-heading mt-10 text-2xl font-semibold tracking-tight">Every live tool</h2>
+        <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+          {category.tagline} Cards below are working destinations, not teasers.
+        </p>
+        <ToolCardRow className="mt-6" tools={tools} />
       </div>
     );
   }

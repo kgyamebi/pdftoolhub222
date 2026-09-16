@@ -1,18 +1,19 @@
 import type { Metadata } from "next";
-import { Fraunces, Figtree } from "next/font/google";
+import { IBM_Plex_Sans, Inter } from "next/font/google";
 import { SiteShell } from "@/components/layout/site-shell";
 import { Providers } from "@/components/providers";
 import { defaultMetadata } from "@/lib/seo";
 import { APP_NAME } from "@/lib/config";
 import "./globals.css";
 
-const heading = Fraunces({
+const heading = IBM_Plex_Sans({
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-heading",
   display: "swap",
 });
 
-const sans = Figtree({
+const sans = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
   display: "swap",

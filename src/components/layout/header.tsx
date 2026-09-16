@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { MenuIcon } from "lucide-react";
+import { MenuIcon, SearchIcon } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
+import { openCommandPalette } from "@/components/chrome/command-palette";
 import { ToolSearch } from "@/components/search/tool-search";
 import { buttonVariants } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -19,8 +20,8 @@ const NAV = [
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:px-6">
+    <header className="sticky top-0 z-40 border-b bg-background/75 backdrop-blur-xl">
+      <div className="mx-auto flex h-[4.25rem] max-w-6xl items-center gap-3 px-4 sm:px-6">
         <Link href="/" className="shrink-0 rounded-md focus-visible:ring-3 focus-visible:ring-ring/50">
           <Logo />
         </Link>
@@ -29,7 +30,7 @@ export function Header() {
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+              className="rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               {item.label}
             </Link>
@@ -39,6 +40,22 @@ export function Header() {
           <ToolSearch />
         </div>
         <div className="ml-auto flex items-center gap-2">
+          <button
+            type="button"
+            className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "lg:hidden")}
+            onClick={openCommandPalette}
+            aria-label="Search tools"
+          >
+            <SearchIcon />
+          </button>
+          <button
+            type="button"
+            className="hidden rounded-lg border px-2 py-1 text-[11px] text-muted-foreground transition-colors hover:bg-muted lg:inline-flex"
+            onClick={openCommandPalette}
+            aria-label="Open command palette"
+          >
+            <kbd className="font-sans">⌘K</kbd>
+          </button>
           <Link href="/pricing" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "hidden sm:inline-flex")}>
             Pricing
           </Link>

@@ -55,8 +55,10 @@ export function DropAnywhere({ children }: { children: React.ReactNode }) {
     <>
       {children}
       {active && (
-        <div className="pointer-events-none fixed inset-0 z-50 grid place-items-center bg-foreground/40 text-background">
-          <p className="rounded-2xl bg-primary px-6 py-4 text-lg font-medium text-primary-foreground">Drop to open a tool</p>
+        <div className="pointer-events-none fixed inset-0 z-50 grid place-items-center bg-[color-mix(in_oklab,var(--foreground)_45%,transparent)] backdrop-blur-sm">
+          <p className="rounded-3xl bg-primary px-8 py-5 text-xl font-medium text-primary-foreground shadow-[var(--shadow-lift)]">
+            Drop to open a local tool
+          </p>
         </div>
       )}
     </>

@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { AlertCircleIcon, CheckCircle2Icon, DownloadIcon, Loader2Icon, SparklesIcon } from "lucide-react";
+import { AlertCircleIcon, CheckCircle2Icon, DownloadIcon, SparklesIcon } from "lucide-react";
+import { ProcessTheater } from "@/components/chrome/process-theater";
 import { ClickPlacePreview, PageBoard } from "@/components/tools/page-board";
 import { InkBoard } from "@/components/tools/ink-board";
 import { SignaturePad } from "@/components/tools/signature-pad";
@@ -12,7 +13,6 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Progress, ProgressLabel, ProgressValue } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { track } from "@/lib/analytics";
 import { formatBytes } from "@/lib/format";
@@ -187,7 +187,7 @@ export function ToolRunner({ tool, initialFiles }: { tool: ToolDefinition; initi
   const saved = inSize > 0 && outSize > 0 && outSize < inSize;
 
   return (
-    <section className="rounded-2xl border bg-card p-4 shadow-sm sm:p-6" aria-labelledby="tool-panel">
+    <section className="rounded-2xl border bg-card/90 p-4 shadow-[var(--shadow-lift)] sm:p-6" aria-labelledby="tool-panel">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 id="tool-panel" className="font-heading text-lg font-medium">
           {tool.name}
@@ -348,13 +348,7 @@ export function ToolRunner({ tool, initialFiles }: { tool: ToolDefinition; initi
 
       <div className="mt-5 flex flex-wrap items-center gap-2">
         <Button type="button" size="lg" onClick={run} disabled={stage === "working" || files.length === 0} className="min-w-36">
-          {stage === "working" ? (
-            <>
-              <Loader2Icon className="animate-spin" /> Processing
-            </>
-          ) : (
-            "Process"
-          )}
+          {stage === "working" ? "Working on this device…" : "Process"}
         </Button>
         {stage === "working" && (
           <Button
@@ -373,14 +367,7 @@ export function ToolRunner({ tool, initialFiles }: { tool: ToolDefinition; initi
         <p className="text-xs text-muted-foreground">Ctrl or ⌘ + Enter</p>
       </div>
 
-      {stage === "working" && (
-        <div className="mt-5">
-          <Progress value={progress.percent}>
-            <ProgressLabel>{progress.stage || "Working…"}</ProgressLabel>
-            <ProgressValue />
-          </Progress>
-        </div>
-      )}
+      {stage === "working" && <ProcessTheater tool={tool.slug} stage={progress.stage} percent={progress.percent} />}
 
       {error && (
         <Alert variant="destructive" className="mt-5">
@@ -401,9 +388,9 @@ export function ToolRunner({ tool, initialFiles }: { tool: ToolDefinition; initi
       )}
 
       {stage === "done" && result && (
-        <div className="mt-6 rounded-xl border bg-background p-4">
+        <div className="mt-6 rounded-xl border bg-background p-4 shadow-[var(--shadow-lift)]">
           <div className="flex items-start gap-2">
-            <CheckCircle2Icon className="mt-0.5 size-5 text-emerald-700" />
+            <CheckCircle2Icon className="mt-0.5 size-5 text-[color:var(--trust)]" />
             <div>
               <p className="font-medium">Your file is ready.</p>
               <p className="text-sm text-muted-foreground">Download, then keep going — this PDF stays in your workspace for about two hours.</p>
