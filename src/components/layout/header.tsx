@@ -4,6 +4,7 @@ import Link from "next/link";
 import { MenuIcon, SearchIcon } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { openCommandPalette } from "@/components/chrome/command-palette";
+import { useSession } from "@/components/auth/session";
 import { ToolSearch } from "@/components/search/tool-search";
 import { buttonVariants } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -19,6 +20,7 @@ const NAV = [
 ];
 
 export function Header() {
+  const { user, loading } = useSession();
   return (
     <header className="sticky top-0 z-40 border-b bg-background/75 backdrop-blur-xl">
       <div className="mx-auto flex h-[4.25rem] max-w-6xl items-center gap-3 px-4 sm:px-6">
@@ -59,9 +61,15 @@ export function Header() {
           <Link href="/pricing" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "hidden sm:inline-flex")}>
             Pricing
           </Link>
-          <Link href="/account" className={cn(buttonVariants({ variant: "outline", size: "sm" }), "hidden sm:inline-flex")}>
-            Account
-          </Link>
+          {loading ? null : user ? (
+            <Link href="/account" className={cn(buttonVariants({ variant: "outline", size: "sm" }), "hidden sm:inline-flex max-w-40 truncate")}>
+              {user.name?.split(" ")[0] || user.email}
+            </Link>
+          ) : (
+            <Link href="/login" className={cn(buttonVariants({ variant: "outline", size: "sm" }), "hidden sm:inline-flex")}>
+              Sign in
+            </Link>
+          )}
           <Sheet>
             <SheetTrigger
               className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "lg:hidden")}
@@ -89,8 +97,8 @@ export function Header() {
                     {c.name}
                   </Link>
                 ))}
-                <Link href="/account" className="mt-2 rounded-lg px-2 py-2 text-sm hover:bg-muted">
-                  Account
+                <Link href={user ? "/account" : "/login"} className="mt-2 rounded-lg px-2 py-2 text-sm hover:bg-muted">
+                  {user ? "Account" : "Sign in"}
                 </Link>
                 <Link href="/pricing" className="rounded-lg px-2 py-2 text-sm hover:bg-muted">
                   Pricing

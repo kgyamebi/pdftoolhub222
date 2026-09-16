@@ -5,7 +5,7 @@ import { allSlugs } from "@/lib/tools/registry";
 import { WORKFLOWS } from "@/lib/workflows";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const staticPaths = ["", "/workspace", "/workflows", "/pricing", "/privacy", "/security", "/terms", "/resources", "/account", "/search"];
+  const staticPaths = ["", "/workspace", "/workflows", "/pricing", "/privacy", "/security", "/terms", "/resources", "/account", "/login", "/search"];
   const slugs = allSlugs().map((s) => `/${s}`);
   const guides = GUIDES.map((g) => `/resources/${g.slug}`);
   const flows = WORKFLOWS.map((w) => `/workflows/${w.slug}`);

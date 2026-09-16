@@ -16,6 +16,8 @@ Discover → Upload → Validate → Process → Preview/result → Download →
 | Workspace | `src/lib/workspace/store.ts` | IndexedDB, TTL, user delete |
 | Usage / plans | `src/lib/usage.ts`, `src/lib/config.ts` | Limits not hardcoded per tool |
 | Payments | `src/lib/payments` | Stripe / Paystack / Flutterwave-shaped interface |
+| Auth | `src/lib/auth` + `/login` | Google, Microsoft 365, email magic link — optional |
+| Email | `src/lib/email` | Resend or console; welcome, magic link, verify, new sign-in, quota |
 | AI | `src/lib/pdf/processor.ts` + `src/app/api/ai` | Extractive on-device; remote needs `AI_API_KEY` |
 | Analytics | `src/lib/analytics.ts` + `/api/v1/analytics` | Event names only, no document text |
 | Admin | `src/app/admin` | Flags, limits, catalog |

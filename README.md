@@ -48,6 +48,17 @@ The UI is a design layer on top of the existing processors. Routes, workers, Ind
 
 See `.env.example`. Core tools run without any keys. AI translation and live payments stay disabled until keys exist — they will not fake success.
 
+## Optional sign-in
+
+Google, Microsoft 365 / Azure AD (tenant `common`, so school accounts work), and email magic links live at `/login`. Tools are never gated.
+
+Redirect URIs to register with the providers:
+
+- `{NEXT_PUBLIC_APP_URL}/api/auth/oauth/google/callback`
+- `{NEXT_PUBLIC_APP_URL}/api/auth/oauth/microsoft/callback`
+
+Emails (welcome, magic link, verify, new sign-in, quota warning) use the console provider until `RESEND_API_KEY` or `EMAIL_PROVIDER=resend` is set. Messages never include PDF bytes.
+
 ## Privacy default
 
 Organization, compression (raster path), conversion, watermarks, signatures and encryption run **in the browser**. Files are not uploaded for those tools. Temporary workspace copies live on the device for about two hours.

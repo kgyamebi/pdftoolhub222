@@ -7,8 +7,11 @@ export type User = {
   id: string;
   email: string;
   name?: string;
+  image?: string;
+  providers: Array<"google" | "microsoft" | "email">;
   plan: "free" | "premium" | "business";
   createdAt: string;
+  lastLoginAt?: string;
 };
 
 export type Session = {

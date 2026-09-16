@@ -11,7 +11,7 @@ export default function TermsPage() {
         <p>PDF Tools Hub is provided as a productivity service. You are responsible for having the right to process the files you open in it.</p>
         <p>Do not use Unlock or Decrypt on files you are not authorized to open. The product will not help bypass unknown passwords.</p>
         <p>AI-assisted summaries and answers are not guaranteed accurate. Do not rely on them as legal, medical or financial advice.</p>
-        <p>Free usage may be rate-limited to keep the product usable. Premium limits are configured, not baked into each tool.</p>
+        <p>Optional Google, Microsoft 365, or email sign-in is not required to process files. You are responsible for the accounts you connect.</p>
         <p>Software is provided as-is. We aim for correctness, not miracle recovery of destroyed files.</p>
       </div>
     </article>

@@ -8,7 +8,13 @@ npm run build
 npm start -- --port 43127 --hostname 0.0.0.0
 ```
 
-Set `NEXT_PUBLIC_APP_URL` to the public origin so sitemap, robots, canonicals and Open Graph URLs are correct.
+Set `NEXT_PUBLIC_APP_URL` to the public origin so sitemap, robots, canonicals, Open Graph URLs and OAuth callbacks are correct.
+
+## Auth and email
+
+Optional. Register Google and Microsoft (Entra ID) apps with tenant `common`. Set `AUTH_SECRET` in production. Magic-link sign-in works with the console email provider in development; use Resend in production.
+
+Do not put PDF bytes in email. Welcome / magic-link / security templates live in `src/lib/email`.
 
 ## Storage
 

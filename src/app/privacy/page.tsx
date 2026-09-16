@@ -16,7 +16,10 @@ export default function PrivacyPage() {
           The session workspace stores a copy in IndexedDB on your device and expires after about two hours. You can delete it immediately from the workspace page.
         </p>
         <p>
-          If you create an optional account later, we store email, preferences and usage counters — not the bytes of your PDFs — in the application database. Object storage, when enabled, uses random identifiers and automatic deletion.
+          If you create an optional account, we store your email, display name, sign-in provider (Google, Microsoft, or email link) and usage counters — not the bytes of your PDFs. Magic-link messages and welcome mail never include document contents.
+        </p>
+        <p>
+          Google and Microsoft only receive a sign-in request. We ask for email and profile. University Microsoft 365 / Azure AD accounts work through the common tenant. You can keep using every local tool without signing in.
         </p>
         <p>
           Product analytics record events such as tool viewed or download completed. They do not include file names by default and never include document text.
