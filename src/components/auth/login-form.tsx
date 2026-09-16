@@ -83,12 +83,6 @@ export function LoginForm({ error }: { error?: string }) {
         <MicrosoftMark />
         Continue with Microsoft
       </a>
-      {!google || !microsoft ? (
-        <p className="text-xs text-muted-foreground">
-          {google ? "" : "Google is shown even before keys are set so the layout matches production. "}
-          {microsoft ? "" : "Microsoft uses tenant “common” so school 365 accounts work when keys exist."}
-        </p>
-      ) : null}
       <div className="flex items-center gap-3 py-2">
         <span className="h-px flex-1 bg-border" />
         <span className="text-xs tracking-[0.16em] text-muted-foreground uppercase">or</span>
