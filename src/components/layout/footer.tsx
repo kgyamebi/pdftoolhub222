@@ -71,7 +71,7 @@ export function Footer() {
         </div>
       </div>
       <div className="border-t py-4 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} PDF Tools Hub. Built for everyday document work.
+        © 2026 PDF Tools Hub. Built for everyday document work.
       </div>
     </footer>
   );
